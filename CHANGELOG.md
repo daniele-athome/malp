@@ -1,6 +1,11 @@
 # Changelog M.A.L.P
 
+## 1.3.2 Tag: release-42 (2024-07-02)
+
+* Make image loading more robust ([Issue #294](https://gitlab.com/gateship-one/malp/-/issues/294))
+
 ## 1.3.1 Tag: release-41 (2024-03-26)
+
 * Partitions support
 * Tag browser support (Filter artist, albums, tracks by and MPD supported tag;
   e.g. performer, genre, label)
@@ -8,6 +13,7 @@
 * Memory usage reductions
 
 ## 1.3.0 Tag: release-40 (2024-01-21)
+
 * Material You design implementation
 * Flickering fixes for album images
 * ArtistSort fixes
