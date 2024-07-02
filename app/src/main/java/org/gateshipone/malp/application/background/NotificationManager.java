@@ -318,7 +318,7 @@ public class NotificationManager implements CoverBitmapLoader.CoverBitmapListene
                      * For older android versions set the null icon which will result in a dummy icon
                      * generated from the application icon.
                      */
-                    mNotificationBuilder.setLargeIcon(null);
+                    mNotificationBuilder.setLargeIcon((Bitmap) null);
                 }
             }
             mNotificationBuilder.setOngoing(!mDismissible);
