@@ -118,7 +118,7 @@ class MPDConnection {
     /**
      * Timeout to wait for socket operations (time in ms)
      */
-    private static final int SOCKET_TIMEOUT = 5 * 1000;
+    private static final int SOCKET_TIMEOUT = 30 * 1000;
 
     /**
      * Timeout to wait until deidle should be finished (time in ms)
@@ -129,7 +129,7 @@ class MPDConnection {
      * Time to wait for response from server. If server is not answering this prevents a livelock
      * after 5 seconds. (time in ns)
      */
-    private static final long RESPONSE_TIMEOUT = 5L * 1000L * 1000L * 1000L;
+    private static final long RESPONSE_TIMEOUT = 30L * 1000L * 1000L * 1000L;
 
     /**
      * Time to sleep the process waiting for a server response. This reduces the busy-waiting to
@@ -212,6 +212,9 @@ class MPDConnection {
         mAutoDisconnect = autoDisconnect;
 
         changeState(CONNECTION_STATES.DISCONNECTED);
+
+        // enable Mopidy workaround immediately
+        mServerCapabilities.enableMopidyWorkaround();
     }
 
 
@@ -404,6 +407,7 @@ class MPDConnection {
 
 
                 mServerCapabilities = new MPDCapabilities(versionString, commands, tags);
+                mServerCapabilities.enableMopidyWorkaround();
                 mCapabilitiesChanged = false;
             }
 
