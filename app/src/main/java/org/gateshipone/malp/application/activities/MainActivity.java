@@ -22,6 +22,9 @@
 
 package org.gateshipone.malp.application.activities;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -29,6 +32,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.preference.PreferenceManager;
+
+import android.os.Looper;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -93,6 +98,7 @@ import org.gateshipone.malp.application.utils.ThemeUtils;
 import org.gateshipone.malp.application.views.CurrentPlaylistView;
 import org.gateshipone.malp.application.views.NowPlayingView;
 import org.gateshipone.malp.mpdservice.ConnectionManager;
+import org.gateshipone.malp.mpdservice.handlers.MPDConnectionStateChangeHandler;
 import org.gateshipone.malp.mpdservice.handlers.serverhandler.MPDQueryHandler;
 import org.gateshipone.malp.mpdservice.handlers.serverhandler.MPDStateMonitoringHandler;
 import org.gateshipone.malp.mpdservice.mpdprotocol.MPDException;
@@ -143,6 +149,8 @@ public class MainActivity extends GenericActivity
     private ImageView mCollapsingImage;
     private RelativeLayout mCollapsingImageLayout;
 
+    private ServerConnectionListener mConnectionStateListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         boolean switchToSettings = false;
@@ -170,6 +178,21 @@ public class MainActivity extends GenericActivity
                         case SETTINGS:
                             switchToSettings = true;
                             break;
+                    }
+
+                    if (Intent.ACTION_SEND.equals(intent.getAction())) {
+                        String textData = extras.getString(Intent.EXTRA_TEXT);
+                        if (textData != null && !textData.isBlank()) {
+                            // try to parse it as a URL
+                            try {
+                                URL url = new URL(textData);
+                                mConnectionStateListener = new ServerConnectionListener(url.toString(), getMainLooper());
+                                MPDInterface.getGenericInstance().addMPDConnectionStateChangeListener(mConnectionStateListener);
+                            }
+                            catch (MalformedURLException ignored) {
+                                // ignored
+                            }
+                        }
                     }
                 }
             }
@@ -525,6 +548,8 @@ public class MainActivity extends GenericActivity
 
             nowPlayingView.onPause();
         }
+
+        MPDInterface.getGenericInstance().removeMPDConnectionStateChangeListener(mConnectionStateListener);
     }
 
     @Override
@@ -1018,5 +1043,25 @@ public class MainActivity extends GenericActivity
 
         // Commit the transaction
         transaction.commit();
+    }
+
+    private static final class ServerConnectionListener extends MPDConnectionStateChangeHandler {
+
+        private final String mediaUrl;
+
+        ServerConnectionListener(String mediaUrl, Looper looper) {
+            super(looper);
+            this.mediaUrl = mediaUrl;
+        }
+
+        @Override
+        public void onConnected() {
+            MPDQueryHandler.playSongNext(mediaUrl);
+            MPDInterface.getGenericInstance().removeMPDConnectionStateChangeListener(this);
+        }
+
+        @Override
+        public void onDisconnected() {
+        }
     }
 }
